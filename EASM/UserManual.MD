@@ -185,7 +185,7 @@ Turn sesearch on/off for the evaluation process. If you don't have access to the
 
 
 * When using multiple companies, it can occur that a domain which belongs to one of your companies gets found using the information available for one of your other companies. This will probably result in a false negative. Because of this, we recommend manually checking every domain. Should such case occur, we advice you to always manually add the domain to the correct company in your companies-list json file.
-* Because of the nature of this tool, false positives and false negatives are bound to occur. It is possible to tweak the sensitivities for certain information and you can change the minimum score threshhold for the owner_test tool, regardless, we still advice you to always manually check all foun domains, regardless of their predicted ownership.
+* Because of the nature of this tool, false positives and false negatives are bound to occur. It is possible to tweak the sensitivities for certain information and you can change the minimum score threshhold for the owner_test tool, regardless, we still advice you to always manually check all found domains, regardless of their predicted ownership.
 * A common false positive are company search tools, because these tools typically contain information about the company you're searching. They may also, regardless of the likelihood score, take a long time to scan due to them containing a lot of pages.
 
 
@@ -193,6 +193,7 @@ Turn sesearch on/off for the evaluation process. If you don't have access to the
 
 
 To run project Omma, navigate to the directory in which the master.py script resides, and simply run master.py without any arguments. We advise you to run the code in the background, in order to safely close any terminal.
+To run the dashboard, simply run app.py. We encourage you to create your own dashboard in order to integrate project Omma with your other security tools.
 
 
 ## Credits
