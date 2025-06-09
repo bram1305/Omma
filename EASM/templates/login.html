@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EASM Login - New Wave Group</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a5fc1;
+            --secondary-color: #6c7ce7;
+            --accent-color: #00d4aa;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #3b82f6;
+            
+            /* Dark theme by default for login */
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #475569;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated background elements */
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(74, 95, 193, 0.1) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            top: 20%;
+            right: -30%;
+            width: 60%;
+            height: 60%;
+            background: radial-gradient(circle, rgba(0, 212, 170, 0.05) 0%, transparent 70%);
+            animation: float 25s ease-in-out infinite reverse;
+            z-index: 0;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+        
+        .login-container {
+            background: var(--bg-secondary);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(10px);
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #2d8659, #34a853);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #ff8c00;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 8px 25px rgba(45, 134, 89, 0.3);
+            position: relative;
+        }
+
+        .logo-icon::before {
+            content: '✓';
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ff8c00;
+        }
+        
+        .logo h1 {
+            color: var(--text-primary);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .logo p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        .subtitle .highlight {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            z-index: 2;
+        }
+        
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        input[type="text"]:focus, input[type="password"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 95, 193, 0.1);
+            background: var(--bg-secondary);
+        }
+
+        input[type="text"]::placeholder, input[type="password"]::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .login-btn:hover::before {
+            left: 100%;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(74, 95, 193, 0.4);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+        
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .error-icon {
+            font-size: 1.125rem;
+        }
+        
+        .client-info {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .client-info .company {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .security-note {
+            background: rgba(0, 212, 170, 0.1);
+            border: 1px solid rgba(0, 212, 170, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .security-icon {
+            color: var(--accent-color);
+        }
+
+        /* Fun IT easter egg */
+        .easter-egg {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            opacity: 0.5;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Loading state */
+        .login-btn.loading {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .login-btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            margin: auto;
+            border: 2px solid transparent;
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .login-container {
+                margin: 1rem;
+                padding: 2rem;
+                max-width: none;
+            }
+
+            .logo h1 {
+                font-size: 1.75rem;
+            }
+
+            .logo-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Accessibility improvements */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Focus styles for keyboard navigation */
+        input:focus-visible {
+            outline: 2px solid var(--accent-color);
+            outline-offset: 2px;
+        }
+
+        .login-btn:focus-visible {
+            outline: 2px solid var(--accent-color);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <div class="logo-icon">
+            </div>
+            <h1>EASM Portal</h1>
+            <p>External Attack Surface Management</p>
+        </div>
+
+        <div class="subtitle">
+            Secure access to <span class="highlight">New Wave Group</span> security infrastructure
+        </div>
+        
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="error">
+                    <i class="fas fa-exclamation-triangle error-icon"></i>
+                    <span>{{ messages[0] }}</span>
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <form method="POST" id="loginForm">
+            <div class="form-group">
+                <label for="username">
+                    <i class="fas fa-user"></i>
+                    Username
+                </label>
+                <div class="input-wrapper">
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" id="username" name="username" placeholder="Enter your username" required autocomplete="username">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">
+                    <i class="fas fa-lock"></i>
+                    Password
+                </label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+                </div>
+            </div>
+            
+            <button type="submit" class="login-btn" id="loginBtn">
+                <i class="fas fa-sign-in-alt"></i>
+                Secure Login
+            </button>
+        </form>
+
+        <div class="security-note">
+            <i class="fas fa-shield-alt security-icon"></i>
+            This session is encrypted and monitored for security
+        </div>
+        
+        <div class="client-info">
+            <strong>Client:</strong> <span class="company">New Wave Group</span><br>
+            <small>Powered by Omma Security Solutions</small>
+        </div>
+    </div>
+
+    <div class="easter-egg">
+        // Light attracts bugs 🐛
+    </div>
+
+    <script>
+        // Add loading state to login button
+        document.getElementById('loginForm').addEventListener('submit', function() {
+            const btn = document.getElementById('loginBtn');
+            btn.classList.add('loading');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
+        });
+
+        // Add some keyboard shortcuts for IT folks
+        document.addEventListener('keydown', function(e) {
+            // Ctrl + Enter to submit form
+            if (e.ctrlKey && e.key === 'Enter') {
+                document.getElementById('loginForm').submit();
+            }
+        });
+
+        // Focus username field on load
+        window.addEventListener('load', function() {
+            document.getElementById('username').focus();
+        });
+
+        // Add subtle typing effect to placeholder (optional easter egg)
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        
+        usernameInput.addEventListener('focus', function() {
+            this.placeholder = 'omma';
+            setTimeout(() => {
+                this.placeholder = 'Enter your username';
+            }, 2000);
+        });
+
+        passwordInput.addEventListener('focus', function() {
+            this.placeholder = '••••••••••••';
+            setTimeout(() => {
+                this.placeholder = 'Enter your password';
+            }, 2000);
+        });
+    </script>
+</body>
+</html> 

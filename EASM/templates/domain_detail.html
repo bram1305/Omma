@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ domain_name }} - Detailed Analysis | EASM Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #4a5fc1;
+            --secondary-color: #6c7ce7;
+            --accent-color: #00d4aa;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #3b82f6;
+        }
+
+        /* Dark theme as default */
+        :root, [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #475569;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #2d8659, #34a853);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            position: relative;
+        }
+
+        .logo-icon::before {
+            content: '✓';
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ff8c00;
+        }
+        
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .logo p {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-right: 1rem;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .nav-buttons {
+                margin-right: 0.5rem;
+                gap: 0.25rem;
+            }
+            
+            .nav-btn span {
+                display: none;
+            }
+            
+            .nav-btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8rem;
+            }
+            
+            .back-btn span {
+                display: none;
+            }
+            
+            .back-btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+            font-weight: 500;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn.active {
+            background: rgba(255,255,255,0.3);
+            font-weight: 600;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-1px);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* Domain Header */
+        .domain-header {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .domain-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .domain-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .security-score-display {
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            background: var(--bg-tertiary);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+        }
+
+        .score-value {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .score-value.high { color: var(--success-color); }
+        .score-value.medium { color: var(--warning-color); }
+        .score-value.low { color: var(--danger-color); }
+
+        .score-label {
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* Critical Issues Alert */
+        .critical-alert {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+            border: 2px solid var(--danger-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            animation: pulse-border 2s infinite;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% { border-color: var(--danger-color); }
+            50% { border-color: rgba(239, 68, 68, 0.5); }
+        }
+
+        .alert-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--danger-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .alert-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--danger-color);
+        }
+
+        .alert-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .issues-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .issue-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 8px;
+            border-left: 4px solid var(--danger-color);
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .metric-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        /* Detailed Sections */
+        .detail-section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-header h3 {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+        }
+
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .info-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .info-value.success { color: var(--success-color); }
+        .info-value.warning { color: var(--warning-color); }
+        .info-value.danger { color: var(--danger-color); }
+
+        /* DNS Records */
+        .dns-records {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .dns-record {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .dns-record-type {
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+
+        .dns-record-value {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            word-break: break-all;
+        }
+
+        /* Vulnerability Table */
+        .vuln-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .vuln-table th,
+        .vuln-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .vuln-table th {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .vuln-table td {
+            color: var(--text-secondary);
+        }
+
+        .vuln-severity {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .vuln-severity.critical {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger-color);
+        }
+
+        .vuln-severity.high {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning-color);
+        }
+
+        .vuln-severity.medium {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--info-color);
+        }
+
+        /* Subdomain Cards */
+        .subdomain-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .subdomain-card {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .subdomain-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .subdomain-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .subdomain-name {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+        }
+
+        .subdomain-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .subdomain-status.safe {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success-color);
+        }
+
+        .subdomain-status.warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning-color);
+        }
+
+        .subdomain-status.critical {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger-color);
+        }
+
+        .subdomain-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .subdomain-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+        }
+
+        /* Technologies */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .tech-item {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .tech-name {
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .tech-version {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .subdomain-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .domain-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <div>
+                    <h1>New Wave Group EASM</h1>
+                    <p>Domain Analysis</p>
+                </div>
+            </div>
+            <div class="header-controls">
+                <div class="nav-buttons">
+                    <a href="{{ url_for('dashboard') }}" class="nav-btn">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="{{ url_for('company_overview') }}" class="nav-btn">
+                        <i class="fas fa-building"></i>
+                        <span>Companies</span>
+                    </a>
+                    <a href="{{ url_for('domain_discovery') }}" class="nav-btn">
+                        <i class="fas fa-search"></i>
+                        <span>Discovery</span>
+                    </a>
+                    <a href="{{ url_for('domain_monitoring') }}" class="nav-btn active">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Monitoring</span>
+                    </a>
+                </div>
+                <a href="{{ url_for('domain_monitoring') }}" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to Monitoring</span>
+                </a>
+                <a href="{{ url_for('logout') }}" class="back-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Domain Header -->
+        <div class="domain-header">
+            <h1 class="domain-title">{{ domain_name }}</h1>
+            <p class="domain-subtitle">Complete Security Analysis & Risk Assessment</p>
+            
+            <div class="security-score-display">
+                <div class="score-value {% if metrics.security_score >= 70 %}high{% elif metrics.security_score >= 40 %}medium{% else %}low{% endif %}">
+                    {{ metrics.security_score }}%
+                </div>
+                <div class="score-label">Security Score</div>
+            </div>
+        </div>
+
+        <!-- Critical Issues Alert -->
+        {% if critical_issues %}
+        <div class="critical-alert">
+            <div class="alert-header">
+                <div class="alert-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div>
+                    <div class="alert-title">Critical Security Issues Detected</div>
+                    <div class="alert-subtitle">Immediate action required for {{ critical_issues|length }} critical issue(s)</div>
+                </div>
+            </div>
+            <ul class="issues-list">
+                {% for issue in critical_issues %}
+                <li class="issue-item">
+                    <i class="fas fa-times-circle" style="color: var(--danger-color);"></i>
+                    <span>{{ issue }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Metrics Overview -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: var(--info-color);">
+                        <i class="fas fa-sitemap"></i>
+                    </div>
+                    <div class="metric-value">{{ metrics.total_subdomains }}</div>
+                </div>
+                <div class="metric-label">Total Subdomains</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: var(--danger-color);">
+                        <i class="fas fa-bug"></i>
+                    </div>
+                    <div class="metric-value">{{ metrics.total_vulnerabilities }}</div>
+                </div>
+                <div class="metric-label">Total Vulnerabilities</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: var(--warning-color);">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <div class="metric-value">{{ metrics.expired_certificates + metrics.expiring_certificates }}</div>
+                </div>
+                <div class="metric-label">Certificate Issues</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: var(--success-color);">
+                        <i class="fas fa-calendar"></i>
+                    </div>
+                    <div class="metric-value" style="font-size: 1rem;">{{ metrics.last_scan }}</div>
+                </div>
+                <div class="metric-label">Last Scan</div>
+            </div>
+        </div>
+
+        <!-- Main Domain Information -->
+        <div class="detail-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <h3>Main Domain Information</h3>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Domain Name:</span>
+                    <span class="info-value">{{ domain.domain }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Risk Level:</span>
+                    <span class="info-value {% if domain.risk_level == 'critical' %}danger{% elif domain.risk_level == 'high' %}warning{% else %}success{% endif %}">
+                        {{ domain.risk_level|title }}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Risk Score:</span>
+                    <span class="info-value">{{ domain.risk_score }}/100</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">IP Address:</span>
+                    <span class="info-value">{{ domain.ip_addresses[0] if domain.ip_addresses else 'Unknown' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- DNS Information -->
+        <div class="detail-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-network-wired"></i>
+                </div>
+                <h3>DNS Records</h3>
+            </div>
+            
+            <div class="dns-records">
+                {% if domain.dns_info %}
+                    {% if domain.dns_info.a_record %}
+                    <div class="dns-record">
+                        <div class="dns-record-type">A Record</div>
+                        <div class="dns-record-value">
+                            {% for record in domain.dns_info.a_record %}
+                                {{ record }}<br>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if domain.dns_info.mx_record %}
+                    <div class="dns-record">
+                        <div class="dns-record-type">MX Record</div>
+                        <div class="dns-record-value">
+                            {% for record in domain.dns_info.mx_record %}
+                                {{ record }}<br>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if domain.dns_info.ns_record %}
+                    <div class="dns-record">
+                        <div class="dns-record-type">NS Record</div>
+                        <div class="dns-record-value">
+                            {% for record in domain.dns_info.ns_record %}
+                                {{ record }}<br>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if domain.dns_info.txt_record %}
+                    <div class="dns-record">
+                        <div class="dns-record-type">TXT Record</div>
+                        <div class="dns-record-value">
+                            {% for record in domain.dns_info.txt_record %}
+                                {{ record }}<br>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="dns-record">
+                        <div class="dns-record-type">No DNS Data</div>
+                        <div class="dns-record-value">DNS information not available</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- SSL Certificate Information -->
+        <div class="detail-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-certificate"></i>
+                </div>
+                <h3>SSL Certificate</h3>
+            </div>
+            
+            <div class="info-grid">
+                {% if domain.certificate_info %}
+                    <div class="info-item">
+                        <span class="info-label">Status:</span>
+                        <span class="info-value {% if domain.certificate_expired %}danger{% elif domain.certificate_expiring %}warning{% else %}success{% endif %}">
+                            {% if domain.certificate_expired %}Expired{% elif domain.certificate_expiring %}Expiring Soon{% else %}Valid{% endif %}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Days Left:</span>
+                        <span class="info-value">{{ domain.certificate_days_left }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Issuer:</span>
+                        <span class="info-value">{{ domain.certificate_issuer or 'Unknown' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Valid From:</span>
+                        <span class="info-value">{{ domain.certificate_info.get('valid_from', 'Unknown') }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Valid To:</span>
+                        <span class="info-value">{{ domain.certificate_info.get('valid_to', 'Unknown') }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">TLS Version:</span>
+                        <span class="info-value">{{ domain.certificate_info.get('tls_version', 'Unknown') }}</span>
+                    </div>
+                {% else %}
+                    <div class="info-item">
+                        <span class="info-label">Status:</span>
+                        <span class="info-value danger">No Certificate Data</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Vulnerabilities -->
+        {% if vuln_breakdown %}
+        <div class="detail-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-bug"></i>
+                </div>
+                <h3>Security Vulnerabilities</h3>
+            </div>
+            
+            <table class="vuln-table">
+                <thead>
+                    <tr>
+                        <th>Vulnerability Type</th>
+                        <th>Severity</th>
+                        <th>Total Instances</th>
+                        <th>Affected Subdomains</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vuln_type, vuln_data in vuln_breakdown.items() %}
+                    <tr>
+                        <td>{{ vuln_type }}</td>
+                        <td>
+                            {% if vuln_type in ['SQL Injection', 'Cross Site Scripting', 'Command execution'] %}
+                                <span class="vuln-severity critical">Critical</span>
+                            {% elif vuln_type in ['Cross Site Request Forgery', 'Open Redirect', 'CRLF Injection'] %}
+                                <span class="vuln-severity high">High</span>
+                            {% else %}
+                                <span class="vuln-severity medium">Medium</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ vuln_data.total_instances }}</td>
+                        <td>{{ vuln_data.affected_subdomains }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <!-- Technologies -->
+        {% if domain.technologies %}
+        <div class="detail-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <h3>Detected Technologies</h3>
+            </div>
+            
+            <div class="tech-grid">
+                {% for tech in domain.technologies %}
+                <div class="tech-item">
+                    <div class="tech-name">{{ tech }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Subdomains -->
+        {% if domain.subdomains %}
+        <div class="detail-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-sitemap"></i>
+                </div>
+                <h3>Subdomains ({{ domain.subdomains|length }})</h3>
+            </div>
+            
+            <div class="subdomain-grid">
+                {% for subdomain in domain.subdomains %}
+                <div class="subdomain-card">
+                    <div class="subdomain-header">
+                        <div class="subdomain-name">{{ subdomain.name }}</div>
+                        <div class="subdomain-status {% if subdomain.risk_level == 'critical' %}critical{% elif subdomain.risk_level == 'high' %}warning{% else %}safe{% endif %}">
+                            {{ subdomain.risk_level|title }}
+                        </div>
+                    </div>
+                    
+                    <div class="subdomain-details">
+                        <div class="subdomain-detail">
+                            <span>Risk Score:</span>
+                            <span>{{ subdomain.risk_score or 0 }}</span>
+                        </div>
+                        <div class="subdomain-detail">
+                            <span>Vulnerabilities:</span>
+                            <span>{{ subdomain.wapiti_score or 0 }}</span>
+                        </div>
+                        {% if subdomain.certificate %}
+                        <div class="subdomain-detail">
+                            <span>Certificate:</span>
+                            <span class="{% if subdomain.certificate.get('expired') %}danger{% elif subdomain.certificate.get('days_left', 365) < 30 %}warning{% else %}success{% endif %}">
+                                {% if subdomain.certificate.get('expired') %}Expired{% elif subdomain.certificate.get('days_left', 365) < 30 %}Expiring{% else %}Valid{% endif %}
+                            </span>
+                        </div>
+                        <div class="subdomain-detail">
+                            <span>Days Left:</span>
+                            <span>{{ subdomain.certificate.get('days_left', 'N/A') }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- OSINT Information -->
+        {% if domain.osint_info %}
+        <div class="detail-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3>OSINT Information</h3>
+            </div>
+            
+            <div class="info-grid">
+                {% if domain.osint_info.whois %}
+                    <div class="info-item">
+                        <span class="info-label">Registrar:</span>
+                        <span class="info-value">{{ domain.osint_info.whois.get('registrar', 'Unknown') }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Creation Date:</span>
+                        <span class="info-value">{{ domain.osint_info.whois.get('creation_date', 'Unknown') }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Expiration Date:</span>
+                        <span class="info-value">{{ domain.osint_info.whois.get('expiration_date', 'Unknown') }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Domain Status:</span>
+                        <span class="info-value">{{ domain.osint_info.whois.get('status', 'Unknown') }}</span>
+                    </div>
+                {% endif %}
+                {% if domain.osint_info.reputation %}
+                    <div class="info-item">
+                        <span class="info-label">Has MX Record:</span>
+                        <span class="info-value {% if domain.osint_info.reputation.get('has_mx_record') %}success{% else %}warning{% endif %}">
+                            {{ 'Yes' if domain.osint_info.reputation.get('has_mx_record') else 'No' }}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Has NS Record:</span>
+                        <span class="info-value {% if domain.osint_info.reputation.get('has_ns_record') %}success{% else %}warning{% endif %}">
+                            {{ 'Yes' if domain.osint_info.reputation.get('has_ns_record') else 'No' }}
+                        </span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        console.log('Domain detail page loaded for {{ domain_name }}');
+        console.log('Security score: {{ metrics.security_score }}%');
+        console.log('Total vulnerabilities: {{ metrics.total_vulnerabilities }}');
+    </script>
+</body>
+</html> 

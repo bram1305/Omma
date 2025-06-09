@@ -1,0 +1,2140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>EASM Dashboard - New Wave Group</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a5fc1;
+            --secondary-color: #6c7ce7;
+            --accent-color: #00d4aa;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #3b82f6;
+        }
+
+        /* Default to dark theme for better user experience */
+        :root, [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #475569;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: all 0.3s ease;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #2d8659, #34a853);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .logo-icon::before {
+            content: '✓';
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ff8c00;
+        }
+        
+        .logo-text {
+            min-width: 0;
+        }
+        
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .logo p {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            font-weight: 400;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            min-width: 0;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-right: 1rem;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .nav-buttons {
+                margin-right: 0.5rem;
+                gap: 0.25rem;
+            }
+            
+            .nav-btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8rem;
+            }
+            
+            .nav-btn span {
+                display: none;
+            }
+            
+            .header-content {
+                gap: 0.5rem;
+            }
+            
+            .logo h1 {
+                font-size: 1.25rem;
+            }
+            
+            .logo p {
+                font-size: 0.75rem;
+            }
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+            font-weight: 500;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn.active {
+            background: rgba(255,255,255,0.3);
+            font-weight: 600;
+        }
+
+        .theme-toggle {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            white-space: nowrap;
+        }
+        
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-1px);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .welcome-section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .welcome-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Cool Dashboard Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Beautiful Security Health Score Card */
+        .security-score-card {
+            grid-column: 1 / 2;
+            grid-row: 1 / 2;
+            background: linear-gradient(135deg, #1e293b, #334155);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .security-score-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #10b981, #3b82f6, #8b5cf6);
+        }
+
+        .score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .score-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-primary);
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .score-title i {
+            color: #3b82f6;
+            font-size: 1.25rem;
+        }
+
+        .score-status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .score-status.excellent {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .score-status.good {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .score-status.poor {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .score-main {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .score-percentage {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .score-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .score-stats {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .stat-item.secure .stat-dot {
+            background: #10b981;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        }
+
+        .stat-item.warning .stat-dot {
+            background: #f59e0b;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        }
+
+        .stat-item.critical .stat-dot {
+            background: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Threat Intelligence Grid */
+        .threat-grid {
+            grid-column: 2 / 3;
+            grid-row: 1 / 2;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .threat-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .threat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .threat-card.critical { border-left: 4px solid #ef4444; }
+        .threat-card.warning { border-left: 4px solid #f59e0b; }
+        .threat-card.info { border-left: 4px solid #3b82f6; }
+        .threat-card.success { border-left: 4px solid #10b981; }
+
+        .threat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .threat-card.critical .threat-icon { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .threat-card.warning .threat-icon { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+        .threat-card.info .threat-icon { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .threat-card.success .threat-icon { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+
+        .threat-content {
+            flex: 1;
+        }
+
+        .threat-number {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .threat-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0.25rem 0;
+        }
+
+        .threat-detail {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Vulnerability Heatmap */
+        .vulnerability-heatmap {
+            grid-column: 1 / 2;
+            grid-row: 2 / 3;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .heatmap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .heatmap-header h3 {
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .heatmap-total {
+            background: var(--bg-tertiary);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .heatmap-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .heatmap-item {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .heatmap-bar {
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .heatmap-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .heatmap-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-align: right;
+            min-width: 120px;
+        }
+
+        .heatmap-count {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            min-width: 2rem;
+            text-align: right;
+        }
+
+        /* Monitoring Stats */
+        .monitoring-stats {
+            grid-column: 2 / 3;
+            grid-row: 2 / 3;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .monitoring-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .monitoring-header h3 {
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .monitoring-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .monitoring-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .monitoring-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            transition: transform 0.2s ease;
+        }
+
+        .monitoring-item:hover {
+            transform: scale(1.02);
+        }
+
+        .monitoring-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem;
+        }
+
+        .monitoring-icon.companies { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+        .monitoring-icon.domains { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .monitoring-icon.coverage { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .monitoring-icon.average { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+
+        .monitoring-data {
+            flex: 1;
+        }
+
+        .monitoring-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .monitoring-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto auto;
+            }
+
+            .security-score-card {
+                grid-column: 1 / 2;
+                grid-row: 1 / 2;
+            }
+
+            .threat-grid {
+                grid-column: 1 / 2;
+                grid-row: 2 / 3;
+            }
+
+            .vulnerability-heatmap {
+                grid-column: 1 / 2;
+                grid-row: 3 / 4;
+            }
+
+            .monitoring-stats {
+                grid-column: 1 / 2;
+                grid-row: 4 / 5;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .threat-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .monitoring-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .score-stats {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .vulnerability-heatmap {
+                padding: 1rem;
+            }
+
+            .heatmap-item {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+                text-align: center;
+                padding: 0.75rem;
+            }
+
+            .heatmap-label {
+                text-align: center;
+                min-width: auto;
+                font-size: 0.875rem;
+            }
+
+            .heatmap-bar {
+                height: 8px;
+                margin: 0.5rem 0;
+            }
+
+            .heatmap-count {
+                font-size: 1.25rem;
+                margin-top: 0.5rem;
+            }
+
+            .monitoring-stats {
+                padding: 1rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .nav-buttons {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .nav-btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8rem;
+            }
+
+            .nav-btn span {
+                display: none;
+            }
+        }
+        
+        .stat-card {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--accent-color);
+        }
+
+        .stat-card.danger::before { background: var(--danger-color); }
+        .stat-card.warning::before { background: var(--warning-color); }
+        .stat-card.success::before { background: var(--success-color); }
+        .stat-card.info::before { background: var(--info-color); }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            height: 100%;
+        }
+
+        .stat-content {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            flex-shrink: 0;
+            align-self: flex-start;
+        }
+
+        .stat-icon.danger { background: var(--danger-color); }
+        .stat-icon.warning { background: var(--warning-color); }
+        .stat-icon.success { background: var(--success-color); }
+        .stat-icon.info { background: var(--info-color); }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-trend {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            align-self: flex-start;
+        }
+
+        .trend-up {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .trend-down {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+        
+        .executive-summary {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .summary-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            min-width: 0;
+            flex: 1;
+        }
+
+        .summary-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .refresh-btn {
+            background: var(--info-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 44px;
+            white-space: nowrap;
+        }
+
+        .refresh-btn:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .refresh-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .summary-content {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .summary-meta {
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+        
+        .action-section {
+            margin-top: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .action-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-height: 120px;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-color);
+        }
+
+        .action-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .action-icon.critical {
+            background: linear-gradient(135deg, var(--danger-color), #dc2626);
+        }
+
+        .action-icon.warning {
+            background: linear-gradient(135deg, var(--warning-color), #d97706);
+        }
+
+        .action-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .action-content h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .action-content p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.5;
+        }
+
+        .action-stats {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .action-stats span {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .critical-count {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .high-count {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .pending-count {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .evaluated-count {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .action-arrow {
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .action-card:hover .action-arrow {
+            color: var(--primary-color);
+            transform: translateX(4px);
+        }
+        
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .quick-stat {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .quick-stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .quick-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Mobile-first responsive design */
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .logo {
+                justify-content: center;
+            }
+
+            .header-controls {
+                justify-content: center;
+                order: -1;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+
+            .welcome-section {
+                padding: 1rem;
+                text-align: center;
+            }
+
+            .welcome-title {
+                font-size: 1.5rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .stat-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 0.5rem;
+            }
+
+            .stat-number {
+                font-size: 2.5rem;
+            }
+            
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+            }
+
+            .summary-title {
+                justify-content: center;
+                text-align: center;
+            }
+
+            .summary-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
+            }
+
+            .quick-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .action-card {
+                padding: 1.5rem;
+            }
+
+            .logo h1 {
+                font-size: 1.25rem;
+            }
+
+            .logo p {
+                font-size: 0.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0.75rem;
+            }
+
+            .welcome-section {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                gap: 0.75rem;
+            }
+
+            .stat-card {
+                padding: 1rem;
+                min-height: 120px;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+
+            .stat-label {
+                font-size: 0.75rem;
+            }
+
+            .stat-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.25rem;
+            }
+
+            .executive-summary {
+                padding: 1rem;
+            }
+
+            .action-card {
+                padding: 1rem;
+            }
+
+            .quick-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .header-controls {
+                gap: 0.5rem;
+            }
+
+            .user-info {
+                display: none; /* Hide on very small screens */
+            }
+
+            .stat-header {
+                flex-direction: row;
+                align-items: flex-start;
+                text-align: left;
+                gap: 0.75rem;
+            }
+
+            .stat-content {
+                align-items: flex-start;
+            }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            box-shadow: var(--shadow-lg);
+            max-width: calc(100vw - 40px);
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: var(--success-color);
+        }
+        
+        .notification.error {
+            background: var(--danger-color);
+        }
+
+        /* Touch-friendly improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .stat-card:hover,
+            .action-card:hover {
+                transform: none;
+            }
+
+            .theme-toggle:hover,
+            .logout-btn:hover,
+            .refresh-btn:hover,
+            .action-btn:hover {
+                transform: none;
+            }
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            :root {
+                --border-color: #000000;
+                --text-secondary: #000000;
+            }
+
+            [data-theme="dark"] {
+                --border-color: #ffffff;
+                --text-secondary: #ffffff;
+            }
+        }
+
+        /* Company Overview Styles */
+        .company-overview {
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-left: 3.25rem;
+        }
+
+        .company-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .company-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .company-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--success-color);
+            transition: background 0.2s ease;
+        }
+
+        .company-card.critical::before {
+            background: var(--danger-color);
+        }
+
+        .company-card.warning::before {
+            background: var(--warning-color);
+        }
+
+        .company-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .company-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .company-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .company-meta {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .domain-count {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .risk-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .risk-badge.critical {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .risk-badge.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .risk-badge.safe {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .btn-icon {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+        }
+
+        .btn-icon:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .company-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-item .stat-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            color: white;
+        }
+
+        .stat-item .stat-icon.critical {
+            background: var(--danger-color);
+        }
+
+        .stat-item .stat-icon.warning {
+            background: var(--warning-color);
+        }
+
+        .stat-item .stat-icon.success {
+            background: var(--success-color);
+        }
+
+        .stat-item .stat-icon.info {
+            background: var(--info-color);
+        }
+
+        .stat-info {
+            flex: 1;
+        }
+
+        .stat-item .stat-number {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .stat-item .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .company-details {
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        .details-header h4 {
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .domain-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .domain-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--bg-primary);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .domain-name {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .btn-small {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .btn-small:hover {
+            background: var(--secondary-color);
+            transform: translateY(-1px);
+        }
+
+        .company-alerts {
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .alert-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: var(--danger-color);
+            margin-bottom: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+
+        .alert-item.critical {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .alert-item.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .alert-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .company-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .company-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .company-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                </div>
+                <div class="logo-text">
+                    <h1>EASM Dashboard</h1>
+                    <p>External Attack Surface Management • New Wave Group</p>
+                </div>
+            </div>
+            <div class="header-controls">
+                <div class="nav-buttons">
+                    <a href="{{ url_for('dashboard') }}" class="nav-btn active">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="{{ url_for('company_overview') }}" class="nav-btn">
+                        <i class="fas fa-building"></i>
+                        <span>Companies</span>
+                    </a>
+                    <a href="{{ url_for('domain_discovery') }}" class="nav-btn">
+                        <i class="fas fa-search"></i>
+                        <span>Discovery</span>
+                    </a>
+                    <a href="{{ url_for('domain_monitoring') }}" class="nav-btn">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Monitoring</span>
+                    </a>
+                </div>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme" aria-label="Toggle dark/light theme">
+                    <i class="fas fa-sun" id="theme-icon"></i>
+                </button>
+                <div class="user-info">
+                    <i class="fas fa-clock"></i>
+                    <span>{{ current_time }}</span>
+                </div>
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1 class="welcome-title">Welcome back! 👋</h1>
+            <p class="welcome-subtitle">Here's your security overview for New Wave Group's attack surface</p>
+        </div>
+
+        <!-- Cool IT Manager Dashboard with Interesting Metrics -->
+        <div class="dashboard-grid">
+                         <!-- Security Health Score - Beautiful Design -->
+             <div class="security-score-card">
+                 <div class="score-header">
+                     <div class="score-title">
+                         <i class="fas fa-shield-alt"></i>
+                         <span>Security Health</span>
+                     </div>
+                     {% set health_score = ((stats.safe_domains / stats.monitored_domains * 100) if stats.monitored_domains > 0 else 0) | round(1) %}
+                     {% if health_score >= 80 %}
+                     <div class="score-status excellent">Excellent</div>
+                     {% elif health_score >= 60 %}
+                     <div class="score-status good">Good</div>
+                     {% else %}
+                     <div class="score-status poor">Needs Attention</div>
+                     {% endif %}
+                 </div>
+                 
+                 <div class="score-main">
+                     <div class="score-percentage">{{ health_score }}%</div>
+                     <div class="score-subtitle">Overall Security Score</div>
+                 </div>
+                 
+                 <div class="score-stats">
+                     <div class="stat-item secure">
+                         <div class="stat-dot"></div>
+                         <div class="stat-info">
+                             <span class="stat-number">{{ stats.safe_domains }}</span>
+                             <span class="stat-label">Secure</span>
+                         </div>
+                     </div>
+                     <div class="stat-item warning">
+                         <div class="stat-dot"></div>
+                         <div class="stat-info">
+                             <span class="stat-number">{{ stats.warning_domains }}</span>
+                             <span class="stat-label">Warning</span>
+                         </div>
+                     </div>
+                     <div class="stat-item critical">
+                         <div class="stat-dot"></div>
+                         <div class="stat-info">
+                             <span class="stat-number">{{ stats.critical_domains }}</span>
+                             <span class="stat-label">Critical</span>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+
+            <!-- Discovery & Monitoring Balance -->
+            <div class="threat-grid">
+                <!-- Domain Discovery -->
+                <div class="threat-card info">
+                    <div class="threat-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="threat-content">
+                        <div class="threat-number">{{ stats.unevaluated_domains }}</div>
+                        <div class="threat-label">New Discoveries</div>
+                        <div class="threat-detail">Awaiting evaluation</div>
+                    </div>
+                </div>
+
+                <!-- Domain Evaluation -->
+                <div class="threat-card success">
+                    <div class="threat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="threat-content">
+                        <div class="threat-number">{{ stats.evaluated_domains }}</div>
+                        <div class="threat-label">Evaluated Domains</div>
+                        <div class="threat-detail">Ready for monitoring</div>
+                    </div>
+                </div>
+
+                <!-- Critical Monitoring Issues -->
+                <div class="threat-card critical">
+                    <div class="threat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="threat-content">
+                        <div class="threat-number">{{ stats.critical_domains }}</div>
+                        <div class="threat-label">Critical Domains</div>
+                        <div class="threat-detail">Immediate action required</div>
+                    </div>
+                </div>
+
+                <!-- Security Monitoring -->
+                <div class="threat-card warning">
+                    <div class="threat-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="threat-content">
+                        <div class="threat-number">{{ stats.monitored_domains }}</div>
+                        <div class="threat-label">Active Monitoring</div>
+                        <div class="threat-detail">{{ stats.warning_domains }} need attention</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vulnerability Heatmap -->
+            <div class="vulnerability-heatmap">
+                <div class="heatmap-header">
+                    <h3><i class="fas fa-bug"></i> Vulnerability Distribution</h3>
+                    <div class="heatmap-total">{{ stats.total_wapiti_vulnerabilities }} Total</div>
+                </div>
+                <div class="heatmap-grid">
+                    {% for vuln_type, count in stats.top_vulnerabilities[:6] %}
+                    <div class="heatmap-item">
+                        <div class="heatmap-bar">
+                            {% set max_count = stats.top_vulnerabilities[0][1] if stats.top_vulnerabilities else 1 %}
+                            {% set percentage = (count / max_count * 100) if max_count > 0 else 0 %}
+                            <div class="heatmap-fill" style="width: {{ percentage }}%"></div>
+                        </div>
+                        <div class="heatmap-label">{{ vuln_type }}</div>
+                        <div class="heatmap-count">{{ count }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- EASM Pipeline Overview -->
+            <div class="monitoring-stats">
+                <div class="monitoring-header">
+                    <h3><i class="fas fa-cogs"></i> EASM Pipeline</h3>
+                    <div class="monitoring-status">
+                        <i class="fas fa-circle" style="color: #00ff00;"></i> Live
+                    </div>
+                </div>
+                <div class="monitoring-grid">
+                    <div class="monitoring-item">
+                        <div class="monitoring-icon companies">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="monitoring-data">
+                            <div class="monitoring-number">{{ stats.companies }}</div>
+                            <div class="monitoring-label">Companies</div>
+                        </div>
+                    </div>
+                    <div class="monitoring-item">
+                        <div class="monitoring-icon domains">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="monitoring-data">
+                            <div class="monitoring-number">{{ stats.unevaluated_domains }}</div>
+                            <div class="monitoring-label">Discovery Queue</div>
+                        </div>
+                    </div>
+                    <div class="monitoring-item">
+                        <div class="monitoring-icon coverage">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="monitoring-data">
+                            <div class="monitoring-number">{{ stats.monitored_domains }}</div>
+                            <div class="monitoring-label">Monitoring</div>
+                        </div>
+                    </div>
+                    <div class="monitoring-item">
+                        <div class="monitoring-icon average">
+                            <i class="fas fa-bug"></i>
+                        </div>
+                        <div class="monitoring-data">
+                            <div class="monitoring-number">{{ stats.total_wapiti_vulnerabilities }}</div>
+                            <div class="monitoring-label">Vulnerabilities</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Executive Summary - Streamlined for IT Managers -->
+        <div class="executive-summary">
+            <div class="summary-header">
+                <div class="summary-title">
+                    <div class="summary-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    Security Status Summary
+                </div>
+                <button class="refresh-btn" onclick="refreshSummary()">
+                    <i class="fas fa-sync-alt"></i>
+                    <span class="btn-text">Refresh</span>
+                </button>
+            </div>
+            <div class="summary-content">
+                {{ executive_summary|safe }}
+            </div>
+            <div class="summary-meta">
+                <span><i class="fas fa-clock"></i> Last updated: {{ current_time }}</span>
+                <span><i class="fas fa-robot"></i> AI-powered analysis</span>
+                <span class="live-indicator">
+                    <i class="fas fa-circle" style="color: #00ff00; animation: pulse 2s infinite;"></i> 
+                    Live Data (master.py)
+                </span>
+            </div>
+        </div>
+
+
+
+
+    </div>
+
+    <div id="notification" class="notification"></div>
+    
+    <script>
+        // Theme toggle functionality
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+            const currentTheme = body.getAttribute('data-theme');
+            
+            if (currentTheme === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                themeIcon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Load saved theme (default to dark)
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            const themeIcon = document.getElementById('theme-icon');
+            
+            document.body.setAttribute('data-theme', savedTheme);
+            themeIcon.className = savedTheme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+        });
+
+        // Notification system
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        // Refresh summary functionality
+        async function refreshSummary() {
+            const refreshBtn = document.querySelector('.refresh-btn');
+            const summaryContent = document.querySelector('.summary-content');
+            
+            // Show loading state
+            refreshBtn.disabled = true;
+            refreshBtn.innerHTML = '<div class="loading-spinner"></div> <span>Generating...</span>';
+            summaryContent.style.opacity = '0.6';
+            
+            try {
+                const response = await fetch('/api/refresh-summary', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Executive summary updated successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    showNotification('Failed to refresh summary: ' + (result.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                showNotification('Network error occurred while refreshing summary', 'error');
+            } finally {
+                // Reset button state
+                refreshBtn.disabled = false;
+                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> <span>Refresh AI Summary</span>';
+                summaryContent.style.opacity = '1';
+            }
+        }
+
+        // Auto-refresh stats every 2 minutes for real-time updates from master.py
+        setInterval(() => {
+            fetch(window.location.href)
+                .then(response => response.text())
+                .then(html => {
+                    // Update only the stats without full page reload
+                    const parser = new DOMParser();
+                    const newDoc = parser.parseFromString(html, 'text/html');
+                    const newStats = newDoc.querySelectorAll('.stat-number');
+                    const currentStats = document.querySelectorAll('.stat-number');
+                    
+                    newStats.forEach((newStat, index) => {
+                        if (currentStats[index] && newStat.textContent !== currentStats[index].textContent) {
+                            currentStats[index].textContent = newStat.textContent;
+                            currentStats[index].parentElement.parentElement.style.animation = 'pulse 0.5s ease-in-out';
+                        }
+                    });
+                })
+                .catch(console.error);
+        }, 120000); // 2 minutes for real-time updates
+
+        // Company details toggle functionality
+        function toggleCompanyDetails(companyId) {
+            const detailsElement = document.getElementById(`company-details-${companyId}`);
+            const toggleButton = document.querySelector(`[onclick="toggleCompanyDetails(${companyId})"] i`);
+            
+            if (detailsElement.style.display === 'none' || detailsElement.style.display === '') {
+                detailsElement.style.display = 'block';
+                detailsElement.style.animation = 'slideDown 0.3s ease-out';
+                toggleButton.style.transform = 'rotate(180deg)';
+            } else {
+                detailsElement.style.animation = 'slideUp 0.3s ease-out';
+                toggleButton.style.transform = 'rotate(0deg)';
+                setTimeout(() => {
+                    detailsElement.style.display = 'none';
+                }, 300);
+            }
+        }
+
+        // Add CSS animations for smooth transitions
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideDown {
+                from {
+                    opacity: 0;
+                    max-height: 0;
+                    transform: translateY(-10px);
+                }
+                to {
+                    opacity: 1;
+                    max-height: 500px;
+                    transform: translateY(0);
+                }
+            }
+            
+            @keyframes slideUp {
+                from {
+                    opacity: 1;
+                    max-height: 500px;
+                    transform: translateY(0);
+                }
+                to {
+                    opacity: 0;
+                    max-height: 0;
+                    transform: translateY(-10px);
+                }
+            }
+            
+            .company-details {
+                overflow: hidden;
+                transition: all 0.3s ease;
+            }
+            
+            .btn-icon i {
+                transition: transform 0.3s ease;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Touch gesture support for mobile
+        let touchStartY = 0;
+        let touchEndY = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            touchStartY = e.changedTouches[0].screenY;
+        });
+
+        document.addEventListener('touchend', function(e) {
+            touchEndY = e.changedTouches[0].screenY;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartY - touchEndY;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    // Swipe up - could trigger refresh or other action
+                    console.log('Swipe up detected');
+                } else {
+                    // Swipe down - could trigger refresh
+                    console.log('Swipe down detected');
+                }
+            }
+        }
+    </script>
+</body>
+</html> 

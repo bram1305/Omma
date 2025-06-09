@@ -1,0 +1,98 @@
+title = "Omma Configuration"
+
+#  Use this file for the adjustable settings which are non-secretive.
+
+[filepaths]
+
+# Companies-list is used by all tools, use absolute path.
+companies-list = "companies.json"
+
+# Unevaluated-list and evaluated-list are used by domain detection tools, we recommend not changing these filepaths. If changed, use an absolute path.
+unevaluated-list = "domainDetection/unevaluated.json"
+evaluated-list = "domainDetection/evaluated.json"
+
+
+[domaindetection]
+
+#  General settings
+[domaindetection.general]
+#  Frequency refers to the frequency of the scan (e.g.: "how frequent the scan is executed"). The value is an int which refers to minutes.
+sesearch-frequency = 60
+shodsearch-frequency = 60
+owner-test-frequency = 30
+#  Step refers to the amount of records which is scanned in one scan. The value is an int.
+sesearch-step = 59
+shodsearch-step = 59
+owner-test-step = 200
+#  Start-minutes refers to the start date of the scan. The value is a float, x minutes from starting the program is the start-date. Depending on your available infrastructure, you may not want the scans to run concurrently.
+sesearch-start-minutes = 0
+shodsearch-start-minutes = 0.2
+owner-test-start-minutes = 0.4
+#  If owner-test-immediate is set to true, owner-test-frequency and owner-test-step are ignored. The owner test is executed immediately after the other scans.
+owner-test-immediate = true
+#  Please refer to the manual to learn more about frequencies and steps (these values depend on the amount of api calls you have left).
+
+#  If goggle-update-on is set to true, the goggle will get updated. Set this to false if you're not using the goggle/sesearch (brave) feature. Set this to false if the maximum limits for the goggle file are reached (refer to the manual).
+goggle-update-on = true
+
+
+[domaindetection.sesearch]
+goggle-url = ''
+goggle-dir = ''
+goggle-name = ''
+remote-name = "origin"
+local-name = "main"
+
+# Settings for the evaluation part of the domain detection.
+[domaindetection.evaluation]
+
+# Threshold for the likelihood score above which a domain is considered to be owned by a company.
+# Value should be between 0.0 and 1.0. (Value represents percentage, thus above 1.0 will be impossible to reach.).
+likelihood-threshold = 0.750
+
+# Adjust sensitivity to certain information found on a website, may not be negative.
+# Cleaned name means the company name is stripped from common abbreviations (inc, llc, bv, ab, gmbh, ...)
+# Power is best left unchanged
+full-name-sensitivity = 1.0
+cleaned-name-sensitivity = 1.50
+address-sensitivity = 20.0
+phone-sensitivity = 10.0
+domain-sensitivity = 20.0
+email-sensitivity = 20.0
+social-sensitivity = 20.0
+vat-sensitivity = 30.0
+power = 0.0
+
+# Fuzzy-match tolerance thresholds, best left unchanged
+# Low tolerance threshold is for stricter matching
+# Range from 0 to 100
+low-tolerance-threshold = 80
+high-tolerance-threshold = 40
+
+# Window factor for fuzzy search, best left unchanged
+# This will be used to make the window bigger than the string we're searching for
+# When > 0.0, a typo like an extra character or an extra space etc... in the webpage will be forgiven
+window-factor = 0.05
+
+# Turn on/off sesearch in the evaluation. If you don't have access to the Brave Search API or limited calls, turn this off. Might cause more false flags when turned off.
+sesearch-on = true
+
+
+[domaincontrol]
+
+# Enable or disable Dark Web scanning (Tor, OnionSearch, DeepDarkCTI)
+# Set to false to skip memory-intensive Dark Web operations
+darkweb-enabled = false
+
+# Enable or disable Wapiti vulnerability scanning
+# Set to false for faster scans without vulnerability assessment
+wapiti-enabled = true
+
+[domaincontrol.general]
+#  Frequency refers to the frequency of the scan (e.g.: "how frequent the scan is executed"). The value is an int which refers to minutes.
+domaincontrol-frequency = 180
+#  Step refers to the amount of records which is scanned in one scan. The value is an int. For domain control, this value refers to the amount of companies for which we scan domains.
+domaincontrol-step = 59
+#  Start-minutes refers to the start date of the scan. The value is a float, x minutes from starting the program is the start-date. Depending on your available infrastructure, you may not want the scans to run concurrently.
+domaincontrol-start-minutes = 0
+# We advise 2 minutes per domain, assuming a company has on average, for example 10 domains. If we have 59 companies per step, we will need 59 companies * 10 domains (per company) *  2 minutes (per domain), which gives us a frequency of 180 minutes.

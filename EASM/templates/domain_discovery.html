@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Domain Discovery - EASM Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a5fc1;
+            --secondary-color: #6c7ce7;
+            --accent-color: #00d4aa;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #3b82f6;
+        }
+
+        /* Default to dark theme for better user experience */
+        :root, [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #475569;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: all 0.3s ease;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #2d8659, #34a853);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .logo-icon::before {
+            content: '✓';
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ff8c00;
+        }
+
+        .logo-text {
+            min-width: 0;
+        }
+        
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .logo p {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-right: 1rem;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .nav-buttons {
+                margin-right: 0.5rem;
+                gap: 0.25rem;
+            }
+            
+            .nav-btn span {
+                display: none;
+            }
+            
+            .nav-btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+            font-weight: 500;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn.active {
+            background: rgba(255,255,255,0.3);
+            font-weight: 600;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 44px;
+            white-space: nowrap;
+        }
+        
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-1px);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+        
+        .page-header h1 {
+            color: var(--text-primary);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .page-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        
+        .page-header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+        
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-item {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .stat-number {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .domains-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .domain-section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .domain-section:hover {
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .section-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+        
+        .section-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .section-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .section-header p {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+        
+        .domain-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .domain-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .domain-list::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        .domain-list::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        .domain-list::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+        
+        .domain-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+        
+        .domain-item:hover {
+            background: var(--bg-primary);
+        }
+        
+        .domain-item:last-child {
+            border-bottom: none;
+        }
+        
+        .domain-info {
+            margin-bottom: 1rem;
+        }
+        
+        .domain-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            word-break: break-all;
+        }
+
+        .domain-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--info-color);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+        
+        .domain-meta {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            white-space: nowrap;
+        }
+        
+        .company-name {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .domain-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+            justify-content: center;
+            min-height: 44px;
+            white-space: nowrap;
+        }
+        
+        .btn-approve {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .btn-approve:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-reject {
+            background: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-reject:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        .like-score {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        
+        .score-high {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+        
+        .score-medium {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .score-low {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-approved {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-rejected {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+        
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--bg-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 1rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state h3 {
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .loading {
+            opacity: 0.5;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            max-width: calc(100vw - 40px);
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: var(--success-color);
+        }
+        
+        .notification.error {
+            background: var(--danger-color);
+        }
+
+        .filter-bar {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .filter-count {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* IT Manager Action Center Styles */
+        .action-center {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .action-header {
+            margin-bottom: 1rem;
+        }
+
+        .action-header h2 {
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-header p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .action-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            min-height: 80px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .action-btn.primary {
+            border-color: var(--success-color);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .action-btn.warning {
+            border-color: var(--warning-color);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .action-btn.danger {
+            border-color: var(--danger-color);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .action-btn.info {
+            border-color: var(--info-color);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .action-btn span {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .action-btn small {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        .action-btn i {
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .action-btn.primary i { color: var(--success-color); }
+        .action-btn.warning i { color: var(--warning-color); }
+        .action-btn.danger i { color: var(--danger-color); }
+        .action-btn.info i { color: var(--info-color); }
+
+        /* Risk Assessment Styles */
+        .risk-summary {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .risk-header {
+            margin-bottom: 1rem;
+        }
+
+        .risk-header h2 {
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .risk-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .risk-item {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .risk-item:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .risk-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .risk-item.critical .risk-icon {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .risk-item.high .risk-icon {
+            background: rgba(245, 158, 11, 0.2);
+        }
+
+        .risk-item.medium .risk-icon {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .risk-item.low .risk-icon {
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        .risk-content {
+            flex: 1;
+        }
+
+        .risk-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .risk-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.125rem;
+        }
+
+        .risk-desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Mobile-first responsive design */
+        @media (max-width: 1024px) {
+            .domains-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .stats-bar {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 1rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .logo {
+                justify-content: center;
+            }
+
+            .nav-links {
+                justify-content: center;
+                order: -1;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .page-header {
+                padding: 1rem;
+            }
+            
+            .page-header h1 {
+                font-size: 1.5rem;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .page-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.25rem;
+            }
+
+            .domain-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                flex: none;
+            }
+
+            .domain-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+                text-align: center;
+            }
+
+            .domain-name {
+                font-size: 1rem;
+            }
+
+            .logo h1 {
+                font-size: 1.25rem;
+            }
+
+            .logo p {
+                font-size: 0.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0.75rem;
+            }
+
+            .page-header {
+                padding: 1rem;
+            }
+
+            .domain-item {
+                padding: 1rem;
+            }
+
+            .stats-bar {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-item {
+                padding: 1rem;
+            }
+
+            .nav-links {
+                gap: 0.5rem;
+            }
+
+            .nav-links a {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .stat-item:hover,
+            .domain-section:hover,
+            .domain-item:hover {
+                transform: none;
+            }
+
+            .btn-approve:hover,
+            .btn-reject:hover,
+            .nav-links a:hover {
+                transform: none;
+            }
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            :root {
+                --border-color: #000000;
+                --text-secondary: #000000;
+            }
+
+            [data-theme="dark"] {
+                --border-color: #ffffff;
+                --text-secondary: #ffffff;
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Action Cards */
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .action-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-height: 120px;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-color);
+        }
+
+        .action-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .action-icon.critical {
+            background: linear-gradient(135deg, var(--danger-color), #dc2626);
+        }
+
+        .action-icon.warning {
+            background: linear-gradient(135deg, var(--warning-color), #d97706);
+        }
+
+        .action-icon.info {
+            background: linear-gradient(135deg, var(--info-color), #2563eb);
+        }
+
+        .action-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .action-content h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .action-content p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.5;
+        }
+
+        .action-stats {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .action-stats span {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .critical-count {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .high-count {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .pending-count {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .evaluated-count {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .action-arrow {
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .action-card:hover .action-arrow {
+            color: var(--primary-color);
+            transform: translateX(4px);
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                </div>
+                <div class="logo-text">
+                    <h1>Domain Discovery</h1>
+                    <p>External Attack Surface Management</p>
+                </div>
+            </div>
+            <div class="nav-links">
+                <div class="nav-buttons">
+                    <a href="{{ url_for('dashboard') }}" class="nav-btn">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="{{ url_for('company_overview') }}" class="nav-btn">
+                        <i class="fas fa-building"></i>
+                        <span>Companies</span>
+                    </a>
+                    <a href="{{ url_for('domain_discovery') }}" class="nav-btn active">
+                        <i class="fas fa-search"></i>
+                        <span>Discovery</span>
+                    </a>
+                    <a href="{{ url_for('domain_monitoring') }}" class="nav-btn">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Monitoring</span>
+                    </a>
+                </div>
+                <a href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="page-header">
+            <h1>
+                <div class="page-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <span>Domain Discovery Management</span>
+            </h1>
+            <p>Review and manage newly discovered domains across your attack surface</p>
+            <div class="live-indicator">
+                <i class="fas fa-circle" style="color: #00ff00; animation: pulse 2s infinite;"></i> 
+                Live Data (master.py)
+            </div>
+        </div>
+        
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-number">{{ total_unevaluated }}</div>
+                <div class="stat-label">Pending Review</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ total_evaluated }}</div>
+                <div class="stat-label">Evaluated</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ unevaluated|length + evaluated|length }}</div>
+                <div class="stat-label">Currently Displayed</div>
+            </div>
+        </div>
+        
+        <div class="domains-grid">
+            <!-- Unevaluated Domains -->
+            <div class="domain-section">
+                <div class="section-header">
+                    <h2>
+                        <div class="section-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <span>Pending Evaluation</span>
+                    </h2>
+                    <p>Newly discovered domains requiring review</p>
+                </div>
+                <div class="filter-bar">
+                    <div class="filter-item">
+                        <i class="fas fa-filter"></i>
+                        <span>Showing first 50 domains</span>
+                    </div>
+                    <div class="filter-count">{{ unevaluated|length }}/{{ total_unevaluated }}</div>
+                </div>
+                <div class="domain-list" id="unevaluated-list">
+                    {% if unevaluated %}
+                        {% for domain in unevaluated %}
+                        <div class="domain-item" data-domain-id="{{ domain.id }}">
+                            <div class="domain-info">
+                                <div class="domain-name">
+                                    <div class="domain-icon">
+                                        <i class="fas fa-globe"></i>
+                                    </div>
+                                    <span>{{ domain.domain }}</span>
+                                    <!-- Show score for unevaluated domains if available -->
+                                    {% if domain.get('like-score') %}
+                                        {% if domain['like-score'] >= 0.7 %}
+                                            <span class="like-score score-high">
+                                                <i class="fas fa-arrow-up"></i>
+                                                {{ "%.1f"|format(domain['like-score'] * 100) }}%
+                                            </span>
+                                        {% elif domain['like-score'] >= 0.4 %}
+                                            <span class="like-score score-medium">
+                                                <i class="fas fa-minus"></i>
+                                                {{ "%.1f"|format(domain['like-score'] * 100) }}%
+                                            </span>
+                                        {% else %}
+                                            <span class="like-score score-low">
+                                                <i class="fas fa-arrow-down"></i>
+                                                {{ "%.1f"|format(domain['like-score'] * 100) }}%
+                                            </span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="like-score score-medium">
+                                            <i class="fas fa-question"></i>
+                                            Pending
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <div class="domain-meta">
+                                    <div class="meta-item">
+                                        <i class="fas fa-building"></i>
+                                        <span class="company-name">{{ domain.company_name }}</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class="fas fa-hashtag"></i>
+                                        <span>ID: {{ domain.id }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="domain-actions">
+                                <button class="btn btn-approve" onclick="approveUnevaluated({{ domain.id }})">
+                                    <i class="fas fa-check"></i>
+                                    <span>Approve</span>
+                                </button>
+                                <button class="btn btn-reject" onclick="rejectUnevaluated({{ domain.id }})">
+                                    <i class="fas fa-times"></i>
+                                    <span>Reject</span>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <h3>All caught up!</h3>
+                            <p>No pending domains to review</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Evaluated Domains -->
+            <div class="domain-section">
+                <div class="section-header">
+                    <h2>
+                        <div class="section-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <span>Evaluated Domains</span>
+                    </h2>
+                    <p>Domains analyzed by the system</p>
+                </div>
+                <div class="filter-bar">
+                    <div class="filter-item">
+                        <i class="fas fa-filter"></i>
+                        <span>Showing first 50 domains</span>
+                    </div>
+                    <div class="filter-count">{{ evaluated|length }}/{{ total_evaluated }}</div>
+                </div>
+                <div class="domain-list" id="evaluated-list">
+                    {% if evaluated %}
+                        {% for domain in evaluated %}
+                        <div class="domain-item" data-domain-id="{{ domain.id }}">
+                            <div class="domain-info">
+                                <div class="domain-name">
+                                    <div class="domain-icon">
+                                        <i class="fas fa-chart-bar"></i>
+                                    </div>
+                                    <span>{{ domain.domain }}</span>
+                                    <!-- Show score for evaluated domains -->
+                                    {% if domain.get('like-score') %}
+                                        {% if domain['like-score'] >= 0.7 %}
+                                            <span class="like-score score-high">
+                                                <i class="fas fa-arrow-up"></i>
+                                                {{ "%.1f"|format(domain['like-score'] * 100) }}%
+                                            </span>
+                                        {% elif domain['like-score'] >= 0.4 %}
+                                            <span class="like-score score-medium">
+                                                <i class="fas fa-minus"></i>
+                                                {{ "%.1f"|format(domain['like-score'] * 100) }}%
+                                            </span>
+                                        {% else %}
+                                            <span class="like-score score-low">
+                                                <i class="fas fa-arrow-down"></i>
+                                                {{ "%.1f"|format(domain['like-score'] * 100) }}%
+                                            </span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="like-score score-medium">
+                                            <i class="fas fa-question"></i>
+                                            Pending
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <div class="domain-meta">
+                                    <div class="meta-item">
+                                        <i class="fas fa-building"></i>
+                                        <span class="company-name">{{ domain.company_name }}</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class="fas fa-hashtag"></i>
+                                        <span>ID: {{ domain.id }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="domain-actions">
+                                <button class="btn btn-approve" onclick="approveEvaluated({{ domain.id }})">
+                                    <i class="fas fa-check"></i>
+                                    <span>Approve</span>
+                                </button>
+                                <button class="btn btn-reject" onclick="rejectEvaluated({{ domain.id }})">
+                                    <i class="fas fa-times"></i>
+                                    <span>Reject</span>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h3>No evaluated domains</h3>
+                            <p>Domains will appear here after evaluation</p>
+                        </div>
+                    {% endif %}
+                </div>
+                        </div>
+        </div>
+
+
+    </div>
+
+    <div id="notification" class="notification"></div>
+    
+    <script>
+        // Load saved theme (default to dark)
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.body.setAttribute('data-theme', savedTheme);
+        });
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+        
+        function setLoading(domainId, loading = true) {
+            const domainItem = document.querySelector(`[data-domain-id="${domainId}"]`);
+            if (domainItem) {
+                if (loading) {
+                    domainItem.classList.add('loading');
+                } else {
+                    domainItem.classList.remove('loading');
+                }
+            }
+        }
+        
+        function removeDomainItem(domainId) {
+            const domainItem = document.querySelector(`[data-domain-id="${domainId}"]`);
+            if (domainItem) {
+                domainItem.style.transition = 'all 0.3s ease';
+                domainItem.style.opacity = '0';
+                domainItem.style.transform = 'translateX(-20px)';
+                setTimeout(() => {
+                    domainItem.remove();
+                    updateStats();
+                }, 300);
+            }
+        }
+
+        function updateStats() {
+            // Update displayed counts
+            const unevaluatedCount = document.querySelectorAll('#unevaluated-list .domain-item').length;
+            const evaluatedCount = document.querySelectorAll('#evaluated-list .domain-item').length;
+            const totalDisplayed = unevaluatedCount + evaluatedCount;
+
+            // Update the stats if elements exist
+            const statNumbers = document.querySelectorAll('.stat-number');
+            if (statNumbers.length >= 3) {
+                statNumbers[2].textContent = totalDisplayed;
+            }
+        }
+        
+        async function approveUnevaluated(domainId) {
+            setLoading(domainId, true);
+            
+            try {
+                const response = await fetch(`/api/approve-unevaluated/${domainId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Domain approved and added to monitoring', 'success');
+                    removeDomainItem(domainId);
+                } else {
+                    showNotification(result.error || 'Failed to approve domain', 'error');
+                    setLoading(domainId, false);
+                }
+            } catch (error) {
+                showNotification('Network error occurred', 'error');
+                setLoading(domainId, false);
+            }
+        }
+        
+        async function rejectUnevaluated(domainId) {
+            setLoading(domainId, true);
+            
+            try {
+                const response = await fetch(`/api/reject-unevaluated/${domainId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Domain rejected and removed', 'success');
+                    removeDomainItem(domainId);
+                } else {
+                    showNotification(result.error || 'Failed to reject domain', 'error');
+                    setLoading(domainId, false);
+                }
+            } catch (error) {
+                showNotification('Network error occurred', 'error');
+                setLoading(domainId, false);
+            }
+        }
+        
+        async function moveToUnevaluated(domainId) {
+            setLoading(domainId, true);
+            
+            try {
+                const response = await fetch(`/api/move-to-unevaluated/${domainId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Domain moved to pending evaluation', 'success');
+                    removeDomainItem(domainId);
+                } else {
+                    showNotification(result.error || 'Failed to move domain', 'error');
+                    setLoading(domainId, false);
+                }
+            } catch (error) {
+                showNotification('Network error occurred', 'error');
+                setLoading(domainId, false);
+            }
+        }
+        
+        async function removeEvaluated(domainId) {
+            setLoading(domainId, true);
+            
+            try {
+                const response = await fetch(`/api/remove-evaluated/${domainId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Domain removed from evaluation', 'success');
+                    removeDomainItem(domainId);
+                } else {
+                    showNotification(result.error || 'Failed to remove domain', 'error');
+                    setLoading(domainId, false);
+                }
+            } catch (error) {
+                showNotification('Network error occurred', 'error');
+                setLoading(domainId, false);
+            }
+        }
+
+        async function approveEvaluated(domainId) {
+            setLoading(domainId, true);
+            
+            try {
+                const response = await fetch(`/api/approve/${domainId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Domain approved and added to monitoring', 'success');
+                    removeDomainItem(domainId);
+                } else {
+                    showNotification(result.error || 'Failed to approve domain', 'error');
+                    setLoading(domainId, false);
+                }
+            } catch (error) {
+                showNotification('Network error occurred', 'error');
+                setLoading(domainId, false);
+            }
+        }
+
+        async function rejectEvaluated(domainId) {
+            setLoading(domainId, true);
+            
+            try {
+                const response = await fetch(`/api/reject/${domainId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Domain rejected and removed', 'success');
+                    removeDomainItem(domainId);
+                } else {
+                    showNotification(result.error || 'Failed to reject domain', 'error');
+                    setLoading(domainId, false);
+                }
+            } catch (error) {
+                showNotification('Network error occurred', 'error');
+                setLoading(domainId, false);
+            }
+        }
+
+        // IT Manager Bulk Actions
+        async function bulkApproveHighScore() {
+            if (!confirm('Approve all domains with score ≥80%? This action cannot be undone.')) return;
+            
+            const highScoreDomains = document.querySelectorAll('.domain-item');
+            let approvedCount = 0;
+            
+            for (const domainItem of highScoreDomains) {
+                const scoreElement = domainItem.querySelector('.score-high');
+                if (scoreElement) {
+                    const domainId = domainItem.getAttribute('data-domain-id');
+                    try {
+                        const response = await fetch(`/api/approve/${domainId}`, { method: 'POST' });
+                        if (response.ok) {
+                            approvedCount++;
+                            domainItem.remove();
+                        }
+                    } catch (error) {
+                        console.error('Failed to approve domain:', domainId);
+                    }
+                }
+            }
+            
+            showNotification(`Bulk approved ${approvedCount} high-score domains`, 'success');
+            updateStats();
+        }
+
+        async function reviewMediumScore() {
+            const mediumScoreDomains = document.querySelectorAll('.score-medium');
+            if (mediumScoreDomains.length === 0) {
+                showNotification('No medium-score domains found', 'info');
+                return;
+            }
+            
+            // Highlight medium score domains for review
+            mediumScoreDomains.forEach(element => {
+                const domainItem = element.closest('.domain-item');
+                domainItem.style.border = '2px solid var(--warning-color)';
+                domainItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+            
+            showNotification(`${mediumScoreDomains.length} medium-score domains highlighted for review`, 'warning');
+        }
+
+        async function bulkRejectLowScore() {
+            if (!confirm('Reject all domains with score <40%? This action cannot be undone.')) return;
+            
+            const lowScoreDomains = document.querySelectorAll('.domain-item');
+            let rejectedCount = 0;
+            
+            for (const domainItem of lowScoreDomains) {
+                const scoreElement = domainItem.querySelector('.score-low');
+                if (scoreElement) {
+                    const domainId = domainItem.getAttribute('data-domain-id');
+                    try {
+                        const response = await fetch(`/api/reject/${domainId}`, { method: 'POST' });
+                        if (response.ok) {
+                            rejectedCount++;
+                            domainItem.remove();
+                        }
+                    } catch (error) {
+                        console.error('Failed to reject domain:', domainId);
+                    }
+                }
+            }
+            
+            showNotification(`Bulk rejected ${rejectedCount} low-score domains`, 'success');
+            updateStats();
+        }
+
+        async function exportReport() {
+            showNotification('Generating security report...', 'info');
+            
+            try {
+                const response = await fetch('/api/export-security-report', { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Create download link
+                    const link = document.createElement('a');
+                    link.href = result.download_url;
+                    link.download = `domain_security_report_${new Date().toISOString().split('T')[0]}.pdf`;
+                    link.click();
+                    
+                    showNotification('Security report downloaded successfully', 'success');
+                } else {
+                    showNotification('Failed to generate report', 'error');
+                }
+            } catch (error) {
+                showNotification('Export failed - feature coming soon', 'warning');
+            }
+        }
+
+        // Enhanced stats update for IT Manager metrics
+        function updateStats() {
+            const unevaluatedCount = document.querySelectorAll('#unevaluated-list .domain-item').length;
+            const evaluatedCount = document.querySelectorAll('#evaluated-list .domain-item').length;
+            const totalDisplayed = unevaluatedCount + evaluatedCount;
+            
+            // Update basic stats
+            const statNumbers = document.querySelectorAll('.stat-number');
+            if (statNumbers.length >= 4) {
+                statNumbers[0].textContent = unevaluatedCount;
+                statNumbers[1].textContent = evaluatedCount;
+                statNumbers[3].textContent = totalDisplayed;
+            }
+            
+            // Update action button counts
+            const highScoreCount = document.querySelectorAll('.score-high').length;
+            const mediumScoreCount = document.querySelectorAll('.score-medium').length;
+            const lowScoreCount = document.querySelectorAll('.score-low').length;
+            
+            const actionButtons = document.querySelectorAll('.action-btn small');
+            if (actionButtons.length >= 3) {
+                actionButtons[0].textContent = `${highScoreCount} domains`;
+                actionButtons[1].textContent = `${mediumScoreCount} domains`;
+                actionButtons[2].textContent = `${lowScoreCount} domains`;
+            }
+        }
+
+        // Auto-update stats on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+            
+            // Auto-refresh stats every 30 seconds
+            setInterval(updateStats, 60000); // 1 minute for real-time updates from master.py
+        });
+
+        // Touch gesture support for mobile
+        let touchStartY = 0;
+        let touchEndY = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            touchStartY = e.changedTouches[0].screenY;
+        });
+
+        document.addEventListener('touchend', function(e) {
+            touchEndY = e.changedTouches[0].screenY;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartY - touchEndY;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    // Swipe up - could trigger refresh or other action
+                    console.log('Swipe up detected');
+                } else {
+                    // Swipe down - could trigger refresh
+                    console.log('Swipe down detected');
+                }
+            }
+        }
+    </script>
+</body>
+</html> 
