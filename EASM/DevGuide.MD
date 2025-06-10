@@ -708,7 +708,7 @@ This section will go over the inner workings of the code. To setup the project, 
 
 ![diagram](diagrams/asm_architecture.drawio-Architecture.drawio.png)  
 ![diagram](diagrams/asm_architecture.drawio-master.py.drawio.png)  
-![diagram](diagrams/asm_architecture.drawio-domainControl.py3.drawio.png)  
+![diagram](diagrams/asm_architecture-domainControl.py3.drawio.png)  
 ![diagram](diagrams/asm_architecture.drawio-dcclasses.py.drawio.png)  
 ![diagram](diagrams/asm_architecture.drawio-sesearch.py.drawio.png)  
 ![diagram](diagrams/asm_architecture.drawio-owner_test.py.drawio.png)  
